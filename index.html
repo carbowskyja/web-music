@@ -1,32 +1,7 @@
 <html>
   <head>
       <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase.js"></script>
-      <script>
-        // Initialize Firebase
-        var config = {
-          apiKey: "AIzaSyDb0nJRpLzu9Vt5ZHY1k4aI3-QaWXjCntY",
-          authDomain: "vocalistsbf.firebaseapp.com",
-          databaseURL: "https://vocalistsbf.firebaseio.com",
-          projectId: "vocalistsbf",
-          storageBucket: "vocalistsbf.appspot.com",
-          messagingSenderId: "715722924968"
-        };
-        firebase.initializeApp(config);
-  
-        var firestore = firebase.firestore();
-        var storage = firebase.storage();
-  
-        var numberOfSong = '0'; // TODO: retrieved from RN
-        var songRef = firestore.collection("songs").doc("0");
-        songRef.get().then(function(doc) {
-          if (doc.exists) {
-            console.log("Document data:", doc.data());
-          } else {
-              // doc.data() will be undefined in this case
-              console.log("No such document!");
-          }
-        });
-      </script>
+      <script src="firebase.js"></script>
 
       <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-app.js"></script>
       <script src="https://www.gstatic.com/firebasejs/5.9.3/firebase-storage.js"></script>
