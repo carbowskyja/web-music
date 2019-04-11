@@ -1,14 +1,22 @@
-// let mic;
-// let fft_song_mic, fft_song_song;
-// let synth;
-// let energies_mic = [];
-// let energies_song = [];
-// let notes = [];
+// // Initialize Firebase
+// var config = {
+// 	apiKey: "AIzaSyDb0nJRpLzu9Vt5ZHY1k4aI3-QaWXjCntY",
+// 	authDomain: "vocalistsbf.firebaseapp.com",
+// 	databaseURL: "https://vocalistsbf.firebaseio.com",
+// 	projectId: "vocalistsbf",
+// 	storageBucket: "vocalistsbf.appspot.com",
+// 	messagingSenderId: "715722924968"
+// };
+// firebase.initializeApp(config);
+
+// var firestore = firebase.firestore();
+// var storage = firebase.storage();
+// var songUri;
+
 var song;
-var my_uri = './sample.mp3';
 var songHistory = [];
 var drawSongHistory = [];
-var source, fft_song, myFilter, delta, humanPitchMax, humanPitchMin;
+var source, fftSong, fftMic, myFilter, delta, humanPitchMax, humanPitchMin;
 
 // center clip nullifies samples below a clip amount
 var doCenterClip = true;
@@ -17,9 +25,14 @@ var centerClipThreshold = 20.0;
 // normalize pre / post autocorrelation
 var preNormalize = true;
 var postNormalize = true;
+var micMin;
 
+// before this the code of listeners will be executed and songUri is gonna be here
+songUri = 'https://firebasestorage.googleapis.com/v0/b/vocalistsbf.appspot.com/o/songs%2Fsample.mp3?alt=media&token=b626efc2-d80f-4e5e-94a8-8688776212bf';
 function preload() {
-    song = loadSound(my_uri); //database
+	// console.log(window.songUri);
+	song = loadSound(songUri); //database
+	// song = loadSound('./sample.mp3');
 }
 
 function setup() {
@@ -31,27 +44,29 @@ function setup() {
 
 	// magic numbers
 	delta = 1; 
-	humanPitchMax = 108; // needs to be even less wide, about 3 octaves
+	micMin = 0; // TODO: find
+	humanPitchMax = 108; // TODO: needs to be even less wide, about 3 octaves
 	humanPitchMin = 21; 
 
 	// to ease the analysis
-	myFilter = new p5.LowPass();
-	myFilter.disconnect();
+	// songFilter = new p5.LowPass();
+	// myFilter.disconnect();
 
 	song.loop();  
-	song.disconnect();
-	song.connect(myFilter);
+	//TODO: filter connection
+	// song.disconnect();
+	// song.connect(songFilter);
 
-	fft_song = new p5.FFT();
-	fft_song.setInput(song);
+	fftSong = new p5.FFT();
+	fftSong.setInput(song);
 
 	mic = new p5.AudioIn();
-	mic.connect(myFilter);
+	// mic.connect(myFilter);
 
-	fft_mic = new p5.FFT();
-	fft_mic.setInput(mic);
+	fftMic = new p5.FFT();
+	fftMic.setInput(mic);
 
-	mic.start();
+	// mic.start();
 	song.play();
 }
 
@@ -60,7 +75,7 @@ function draw() {
 	noFill();
 
 	// frequency analysis of the song
-	var timeDomain = fft_song.waveform(1024, 'float32');
+	var timeDomain = fftSong.waveform(1024, 'float32');
 	var corrBuff = autoCorrelate(timeDomain);
     var midi = freqToMidi(findFrequency(corrBuff));
 
@@ -77,16 +92,17 @@ function draw() {
 	}
 	
 	// frequency analysis of the mic
-	timeDomain = fft_mic.waveform(1024, 'float32');
+	timeDomain = fftMic.waveform(1024, 'float32');
 	corrBuff = autoCorrelate(timeDomain);
     midi = freqToMidi(findFrequency(corrBuff));
 
 	// the voice visualization
 	// TODO: when silent, then what? (it's going crazy)
 	// could to like karaoke apps (filling with color, it would be easier to control noize probably)
+	if (mic.getLevel() > micMin) { 
     var ey = map(midi, humanPitchMin, humanPitchMax, height, 0);
-	ellipse(width / 2, ey, 10);
-	
+		ellipse(width / 2, ey, 10);
+	}
 /*     begin playing and recording only when in the middle
     countdown? nope */
 

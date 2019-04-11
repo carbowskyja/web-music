@@ -11,19 +11,19 @@ firebase.initializeApp(config);
 
 var firestore = firebase.firestore();
 var storage = firebase.storage();
+// var songUri;
 
-var songRef = firestore.collection("songs")
-songRef.doc("SF").set({
-    name: "San Francisco", state: "CA", country: "USA",
-    capital: false, population: 860000,
-    regions: ["west_coast", "norcal"] });
-
-docRef = firestore.collection("songs").doc("SF");
-docRef.get().then(function(doc) {
+var songRef = firestore.collection("songs").doc("0")
+songRef.get().then(function(doc) {
     if (doc.exists) {
-        console.log("Document data:", doc.data());
+        // var path = storage.ref(doc.data().song);
+        // var path = storage.ref('/songs/sample.mp3');
+        // // console.log(path);
+		// path.getDownloadURL().then(function(url) {
+        //     window.songUri = url;
+        // });
+        window.songUri = dog.data().song;
     } else {
-        // doc.data() will be undefined in this case
         console.log("No such document!");
     }
 });
