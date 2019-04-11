@@ -1,17 +1,4 @@
-// // Initialize Firebase
-// var config = {
-// 	apiKey: "AIzaSyDb0nJRpLzu9Vt5ZHY1k4aI3-QaWXjCntY",
-// 	authDomain: "vocalistsbf.firebaseapp.com",
-// 	databaseURL: "https://vocalistsbf.firebaseio.com",
-// 	projectId: "vocalistsbf",
-// 	storageBucket: "vocalistsbf.appspot.com",
-// 	messagingSenderId: "715722924968"
-// };
-// firebase.initializeApp(config);
-
-// var firestore = firebase.firestore();
-// var storage = firebase.storage();
-// var songUri;
+// TODO: main problem - listeners, because this script must be executed within listener
 
 var song;
 var songHistory = [];
@@ -31,7 +18,7 @@ var micMin;
 songUri = 'https://firebasestorage.googleapis.com/v0/b/vocalistsbf.appspot.com/o/songs%2Fsample.mp3?alt=media&token=b626efc2-d80f-4e5e-94a8-8688776212bf';
 function preload() {
 	// console.log(window.songUri);
-	song = loadSound(songUri); //database
+	song = loadSound(window.Uri); //database
 	// song = loadSound('./sample.mp3');
 }
 
