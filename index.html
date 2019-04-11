@@ -1,17 +1,20 @@
 <html>
   <head>
-      <script>
-        // window.Uri = 'https://firebasestorage.googleapis.com/v0/b/vocalistsbf.appspot.com/o/songs%2Fsample.mp3?alt=media&token=b626efc2-d80f-4e5e-94a8-8688776212bf';
-        // document.addEventListener("load", () => {document.ReactNativeWebView.postMessage('hey');});
-        // document.addEventListener("message", function(event) {
-        //   window.Uri = data.event;
-        // })
-        console.log('script side: ' + window.Uri);
-      </script>
-
       <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/p5.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.3/addons/p5.sound.js"></script>
+
       <script src="sketch.js"></script>
+      <script>
+          // window.Uri = 'https://firebasestorage.googleapis.com/v0/b/vocalistsbf.appspot.com/o/songs%2Fsample.mp3?alt=media&token=b626efc2-d80f-4e5e-94a8-8688776212bf';
+          // document.addEventListener("load", () => {document.ReactNativeWebView.postMessage('hey');});
+          var uri;
+          document.addEventListener("message", function(event) {
+            uri = data.event;
+            startSketch();
+          })
+          // var uri = 'https://firebasestorage.googleapis.com/v0/b/vocalistsbf.appspot.com/o/songs%2Fsample.mp3?alt=media&token=b626efc2-d80f-4e5e-94a8-8688776212bf';
+          // startSketch();
+        </script>
   </head>
   <body></body>
 </html>
