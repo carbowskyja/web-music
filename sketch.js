@@ -1,17 +1,10 @@
-// TODO: main problem - listeners, because this script must be executed within listener
-
-
-
-// before this the code of listeners will be executed and songUri is gonna be here
-
-// songUri = 'https://firebasestorage.googleapis.com/v0/b/vocalistsbf.appspot.com/o/songs%2Fsample.mp3?alt=media&token=b626efc2-d80f-4e5e-94a8-8688776212bf';
 function startSketch() {
 	var sketch = function(p) {
 
-		var song;
+		var song, audio;
 		var songHistory = [];
 		var drawSongHistory = [];
-		var source, fftSong, fftMic, myFilter, delta, humanPitchMax, humanPitchMin;
+		var fftSong, fftMic, myFilter, delta, humanPitchMax, humanPitchMin, mistakeDelta;
 		
 		// center clip nullifies samples below a clip amount
 		var doCenterClip = true;
@@ -22,36 +15,49 @@ function startSketch() {
 		var postNormalize = true;
 		var micMin;
 
+		var counter;
+		var uri = './lfv_string.mp3';
+
 		p.preload = function() {
-			// console.log(window.songUri);
 			song = p.loadSound(uri); //database
-			// song = loadSound('./sample.mp3');
+			audio = p.loadSound(uri);
 		}
 		
 		p.setup = function() {
+			// meh
 			p.createCanvas(p.windowWidth, p.windowHeight);
 			p.noFill();
-			p.textSize(24);
-			p.textAlign(p.CENTER, p.CENTER);
-			p.textFont('monospace');
+			p.frameRate(30);
 		
 			// magic numbers
 			delta = 1; 
-			micMin = 0; // TODO: find
+			micMin = 0.1; // TODO: find
 			humanPitchMax = 108; // TODO: needs to be even less wide, about 3 octaves
 			humanPitchMin = 21; 
-		
+			mistakeDelta = 10;
+			p.colorMode(p.HSB, 100, 100, 100);
+
+			for (var i = 0; i < p.windowWidth / 2; i++){
+				drawSongHistory.push(-2);
+			}
+			// counter = p.windowWidth / 2;
+			counter = 0;
+
 			// to ease the analysis
-			// songFilter = new p5.LowPass();
-			// myFilter.disconnect();
-		
-			song.loop();  
+			songFilter = new p5.LowPass();
+			songFilter.disconnect();
+			// song.loop();  
 			//TODO: filter connection
-			// song.disconnect();
-			// song.connect(songFilter);
+			song.disconnect();
+			song.connect(songFilter);
+			// song.onended(() => {
+			// 	for (var i = 0; i < p.windowWidth; i++){
+			// 		drawSongHistory.push(-2);
+			// 	}
+			// });
 		
 			fftSong = new p5.FFT();
-			fftSong.setInput(song);
+			fftSong.setInput(songFilter);
 		
 			mic = new p5.AudioIn();
 			// mic.connect(myFilter);
@@ -59,75 +65,90 @@ function startSketch() {
 			fftMic = new p5.FFT();
 			fftMic.setInput(mic);
 		
-			// mic.start();
+			// mic.disconnect();
 			song.play();
+			audio.connect();
+			audio.play();
 		}
 		
 		p.draw = function() {
+			// if (counter > 0 && !song.isPlaying()) {
+			// 	drawSongHistory.push(-2);
+			// 	counter -= 1;
+			// }
+
 			p.background(255);
-			p.noFill();
-		
+			// here will be some kind of grid
+			// in the left will be stats
+			p.fill(0, 0, 0);
+			p.rect(p.windowWidth / 2, 0, 1, p.windowHeight);
 			// frequency analysis of the song
 			var timeDomain = fftSong.waveform(1024, 'float32');
 			var corrBuff = p.autoCorrelate(timeDomain);
-				var midi = p.freqToMidi(p.findFrequency(corrBuff));
+			var midi = p.freqToMidi(p.findFrequency(corrBuff));
 		
 			// NaN and outliers control
-				if (!isNaN(midi)) {
-					if (p.isNotOutlier(songHistory, midi, delta)) {
-						drawSongHistory.push(midi);
-					}
-					else {
-						drawSongHistory.push(-1);
+			if (!isNaN(midi)) {
+				if (p.isNotOutlier(songHistory, midi, delta)) {
+					drawSongHistory.push(midi);
 				}
-				// to not get errors or more unnecessary outliers
-					songHistory.push(midi);
+				else {
+					drawSongHistory.push(-1);
+			}
+			// to not get errors or more unnecessary outliers
+				songHistory.push(midi);
 			}
 			
 			// frequency analysis of the mic
 			timeDomain = fftMic.waveform(1024, 'float32');
 			corrBuff = p.autoCorrelate(timeDomain);
-				midi = p.freqToMidi(p.findFrequency(corrBuff));
+			micMidi = p.freqToMidi(p.findFrequency(corrBuff));
 		
 			// the voice visualization
 			// TODO: when silent, then what? (it's going crazy)
 			// could to like karaoke apps (filling with color, it would be easier to control noize probably)
+			var c = p.abs(midi - micMidi) > mistakeDelta ? 0 : p.map(p.abs(midi - micMidi), 0, mistakeDelta, 20, 0)
+			p.fill(c, 100, 100);
+			p.noStroke();
 			if (mic.getLevel() > micMin) { 
-				var ey = p.map(midi, humanPitchMin, humanPitchMax, p.height, 0);
-				p.ellipse(p.width / 2, ey, 10);
+				var ey = p.map(micMidi, humanPitchMin, humanPitchMax, p.height, 0);
+				p.ellipse(p.windowWidth / 2, ey, 10);
+
 			}
 		/*     begin playing and recording only when in the middle
 				countdown? nope */
-		
-				p.beginShape();
-				p.stroke(0);
-				p.noFill();
-				for (var i = 0; i < drawSongHistory.length - 3; i++) {
-				// replacing outliner with next modo input
-						if (drawSongHistory[i + 1] === -1) {
-							drawSongHistory[i + 1] = drawSongHistory[i + 2]; 
+			// TODO: dynamic height
+			// shapes?
+
+			// p.stroke(0);
+			// p.beginShape();
+			for (var i = 0; i < drawSongHistory.length - 3; i++) {
+			// replacing outliner with next modo input
+				if (drawSongHistory[i + 1] === -1) {
+					drawSongHistory[i + 1] = drawSongHistory[i + 2]; 
 				}
-				// TODO: drawing some shape 
-						var y = p.map(drawSongHistory[i], humanPitchMin, humanPitchMax, p.height, 0);
-						p.point(i, y);
-						
-				}
-				p.endShape();
-		
-				// get rid of first element
-				if (drawSongHistory.length === p.width) {
-						drawSongHistory.splice(0, 1);
-				}
+			// TODO: drawing some shape 
+				var y = p.map(drawSongHistory[i], humanPitchMin, humanPitchMax, p.height, 0);
+				var brightness = i > p.windowWidth / 2 ? 100 : 30
+				p.fill(0, 100, brightness);
+				p.ellipse(i + p.windowWidth / 2, y, 1);					
+			}
+			// p.endShape();
+	
+			// get rid of first element
+			if (drawSongHistory.length === p.windowWidth / 2) {
+					drawSongHistory.splice(0, 1);
+			}
 		}
 		
 		p.isNotOutlier = function(history, midi, delta) {
-				// console.log(typeof history !== 'undefined');
-			
-				if ( typeof history != 'undefined' && history.length > 1 ) { 
-					return p.abs(history[history.length - 1] - midi) < delta; }
-				else {
-					return true;
-					} 
+			// console.log(typeof history !== 'undefined');
+		
+			if ( typeof history != 'undefined' && history.length > 1 ) { 
+				return p.abs(history[history.length - 1] - midi) < delta; }
+			else {
+				return true;
+				} 
 		} 
 		
 		// accepts a timeDomainBuffer and multiplies every value
