@@ -15,8 +15,8 @@ function startSketch() {
 		var postNormalize = true;
 		var micMin;
 
-		var counter;
-		var uri = './lfv_string.mp3';
+		var counter, fullCounter, partCounter;
+		// var uri = './lfv_string.mp3';
 
 		p.preload = function() {
 			song = p.loadSound(uri); //database
@@ -33,15 +33,17 @@ function startSketch() {
 			delta = 1; 
 			micMin = 0.1; // TODO: find
 			humanPitchMax = 108; // TODO: needs to be even less wide, about 3 octaves
-			humanPitchMin = 21; 
+			humanPitchMin = 40; 
 			mistakeDelta = 10;
 			p.colorMode(p.HSB, 100, 100, 100);
 
-			for (var i = 0; i < p.windowWidth / 2; i++){
+			for (var i = 0; i < p.width / 2; i++){
 				drawSongHistory.push(-2);
 			}
-			// counter = p.windowWidth / 2;
 			counter = 0;
+			fullCounter = 0;
+			partCounter = 0;
+			// counter = 0;
 
 			// to ease the analysis
 			songFilter = new p5.LowPass();
@@ -51,7 +53,7 @@ function startSketch() {
 			song.disconnect();
 			song.connect(songFilter);
 			// song.onended(() => {
-			// 	for (var i = 0; i < p.windowWidth; i++){
+			// 	for (var i = 0; i < p.width; i++){
 			// 		drawSongHistory.push(-2);
 			// 	}
 			// });
@@ -67,21 +69,30 @@ function startSketch() {
 		
 			// mic.disconnect();
 			song.play();
-			audio.connect();
-			audio.play();
 		}
 		
 		p.draw = function() {
-			// if (counter > 0 && !song.isPlaying()) {
-			// 	drawSongHistory.push(-2);
-			// 	counter -= 1;
-			// }
+			// not really working
+			if (counter > 0 && !song.isPlaying()) {
+				drawSongHistory.push(-2);
+				counter -= 1;
+			}
+
+			if (counter === p.width / 2) {
+				audio.play();
+				mic.start();
+				counter += 1;
+			}
+
+			if (counter < p.width / 2) {
+				counter += 1;
+			}
 
 			p.background(255);
 			// here will be some kind of grid
 			// in the left will be stats
 			p.fill(0, 0, 0);
-			p.rect(p.windowWidth / 2, 0, 1, p.windowHeight);
+			p.rect(p.width / 2, 0, 1, p.height);
 			// frequency analysis of the song
 			var timeDomain = fftSong.waveform(1024, 'float32');
 			var corrBuff = p.autoCorrelate(timeDomain);
@@ -104,16 +115,19 @@ function startSketch() {
 			corrBuff = p.autoCorrelate(timeDomain);
 			micMidi = p.freqToMidi(p.findFrequency(corrBuff));
 		
-			// the voice visualization
-			// TODO: when silent, then what? (it's going crazy)
-			// could to like karaoke apps (filling with color, it would be easier to control noize probably)
-			var c = p.abs(midi - micMidi) > mistakeDelta ? 0 : p.map(p.abs(midi - micMidi), 0, mistakeDelta, 20, 0)
+			var c = p.abs(drawSongHistory[0] - micMidi) > mistakeDelta ? 0 : p.map(p.abs(midi - micMidi), 0, mistakeDelta, 20, 0)
 			p.fill(c, 100, 100);
 			p.noStroke();
-			if (mic.getLevel() > micMin) { 
-				var ey = p.map(micMidi, humanPitchMin, humanPitchMax, p.height, 0);
-				p.ellipse(p.windowWidth / 2, ey, 10);
 
+			if (mic.getLevel() > micMin) { 
+				fullCounter += 1;
+				partCounter += p.map(p.abs(drawSongHistory[0] - micMidi), 0, 20, 0, 1);
+
+				p.textAlign(p.CENTER);
+				p.text(100 * partCounter / fullCounter, p.width / 4, p.height / 2);
+
+				var ey = p.map(micMidi, humanPitchMin, humanPitchMax, p.height, 0);
+				p.ellipse(p.width / 2, ey, 10);
 			}
 		/*     begin playing and recording only when in the middle
 				countdown? nope */
@@ -129,14 +143,14 @@ function startSketch() {
 				}
 			// TODO: drawing some shape 
 				var y = p.map(drawSongHistory[i], humanPitchMin, humanPitchMax, p.height, 0);
-				var brightness = i > p.windowWidth / 2 ? 100 : 30
+				var brightness = i > p.width / 2 ? 100 : 30
 				p.fill(0, 100, brightness);
-				p.ellipse(i + p.windowWidth / 2, y, 1);					
+				p.ellipse(i + p.width / 2, y, 1);					
 			}
 			// p.endShape();
 	
 			// get rid of first element
-			if (drawSongHistory.length === p.windowWidth / 2) {
+			if (drawSongHistory.length === p.width / 2) {
 					drawSongHistory.splice(0, 1);
 			}
 		}
