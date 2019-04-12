@@ -25,7 +25,7 @@ function startSketch() {
 		
 		p.setup = function() {
 			// meh
-			p.createCanvas(p.windowWidth, p.windowHeight);
+			p.createCanvas(screen.availWidth, screen.availHeight);
 			p.noFill();
 			p.frameRate(30);
 		
