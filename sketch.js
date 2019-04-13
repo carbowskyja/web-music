@@ -1,10 +1,24 @@
+const colorCodes = [
+	{color: 0, white: true},
+	{color: 2, white: false},
+	{color: 5, white: true},
+	{color: 7, white: false},
+	{color: 10, white: true},
+	{color: 20, white: true},
+	{color: 30, white: false},
+	{color: 40, white: true},
+	{color: 42, white: false},
+	{color: 45, white: true},
+	{color: 50, white: false},
+	{color: 60, white: true}
+]
+
 function startSketch() {
 	var sketch = function(p) {
-
 		var song, audio;
 		var songHistory = [];
 		var drawSongHistory = [];
-		var fftSong, fftMic, myFilter, delta, humanPitchMax, humanPitchMin, mistakeDelta;
+		var fftSong, fftMic, myFilter, recognitionDelta, humanPitchMax, humanPitchMin, mistakeDelta;
 		
 		// center clip nullifies samples below a clip amount
 		var doCenterClip = true;
@@ -15,8 +29,10 @@ function startSketch() {
 		var postNormalize = true;
 		var micMin;
 
-		var counter, fullCounter, partCounter;
-		// var uri = './lfv_string.mp3';
+		// prev-post - for syncing the song, full/part - for stats
+		var prevCounter, postCounter, fullCounter, partCounter;
+		var blockWidth, blockCount, blockHeight;
+		var uri = './lfv_string.mp3';
 
 		p.preload = function() {
 			song = p.loadSound(uri); //database
@@ -25,26 +41,32 @@ function startSketch() {
 		
 		p.setup = function() {
 			// meh
-			// p.createCanvas(screen.availWidth, screen.availHeight);
-			p.createCanvas(1080, 1920);
+			p.createCanvas(p.windowWidth, p.windowHeight);
+			// p.createCanvas(width, height);
 			p.noFill();
-			p.frameRate(30);
-		
+			p.frameRate(60);
+			p.colorMode(p.HSB, 70, 100, 100);
 			// magic numbers
-			delta = 1; 
+			recognitionDelta = 1; 
 			micMin = 0.1; // TODO: find
-			humanPitchMax = 108; // TODO: needs to be even less wide, about 3 octaves
-			humanPitchMin = 40; 
+			humanPitchMax = 84; // TODO: needs to be even less wide, about 3 octaves (excluding)
+			humanPitchMin = 36; 
 			mistakeDelta = 10;
-			p.colorMode(p.HSB, 100, 100, 100);
+			blockWidth = 10; // TODO: find
 
-			for (var i = 0; i < p.width / 2; i++){
+			blockHeight = p.map(humanPitchMax - 1, humanPitchMin, humanPitchMax, p.height, 0);
+			blockCount = p.floor(p.width / blockWidth);
+			// TODO: the height of rects should be estimated too!!!
+
+			for (var i = 0; i < blockCount - 1; i++){
 				drawSongHistory.push(-2);
 			}
-			counter = 0;
+
+			prevCounter = blockCount / 2;
+			postCounter = blockCount / 2;
+
 			fullCounter = 0;
 			partCounter = 0;
-			// counter = 0;
 
 			// to ease the analysis
 			songFilter = new p5.LowPass();
@@ -53,11 +75,6 @@ function startSketch() {
 			//TODO: filter connection
 			song.disconnect();
 			song.connect(songFilter);
-			// song.onended(() => {
-			// 	for (var i = 0; i < p.width; i++){
-			// 		drawSongHistory.push(-2);
-			// 	}
-			// });
 		
 			fftSong = new p5.FFT();
 			fftSong.setInput(songFilter);
@@ -73,27 +90,34 @@ function startSketch() {
 		}
 		
 		p.draw = function() {
-			// not really working
-			if (counter > 0 && !song.isPlaying()) {
+			if (postCounter > 0 && !song.isPlaying()) {
 				drawSongHistory.push(-2);
-				counter -= 1;
+				postCounter -= 1;
 			}
 
-			if (counter === p.width / 2) {
+			if (prevCounter === 0) {
 				audio.play();
 				mic.start();
-				counter += 1;
+				prevCounter -= 1;
 			}
 
-			if (counter < p.width / 2) {
-				counter += 1;
+			if (prevCounter > 0) {
+				prevCounter -= 1;
 			}
 
-			p.background(255);
-			// here will be some kind of grid
-			// in the left will be stats
-			p.fill(0, 0, 0);
-			p.rect(p.width / 2, 0, 1, p.height);
+			p.background(50, 20, 60);
+
+			// piano grid
+			p.noStroke();
+			for (var i = 0; i < 4; i++) {
+				for (var j = 0; j < 12; j++) {
+					p.fill(0, 0, colorCodes[j].white ? 100 : 0);
+					p.rect(p.width - blockWidth * 3, p.height - (i * 12 + j) * blockHeight, blockWidth * 3, blockHeight);
+				}
+			}
+
+			p.fill(50, 20, 40);
+			p.rect(p.width / 2, 0, 3, p.height);
 			// frequency analysis of the song
 			var timeDomain = fftSong.waveform(1024, 'float32');
 			var corrBuff = p.autoCorrelate(timeDomain);
@@ -101,14 +125,17 @@ function startSketch() {
 		
 			// NaN and outliers control
 			if (!isNaN(midi)) {
-				if (p.isNotOutlier(songHistory, midi, delta)) {
+				if (p.isNotOutlier(songHistory, midi, recognitionDelta)) {
 					drawSongHistory.push(midi);
 				}
 				else {
 					drawSongHistory.push(-1);
-			}
+				}
 			// to not get errors or more unnecessary outliers
 				songHistory.push(midi);
+			}
+			else {
+				drawSongHistory.push(-2);
 			}
 			
 			// frequency analysis of the mic
@@ -116,16 +143,16 @@ function startSketch() {
 			corrBuff = p.autoCorrelate(timeDomain);
 			micMidi = p.freqToMidi(p.findFrequency(corrBuff));
 		
-			var c = p.abs(drawSongHistory[0] - micMidi) > mistakeDelta ? 0 : p.map(p.abs(midi - micMidi), 0, mistakeDelta, 20, 0)
-			p.fill(c, 100, 100);
+			// var c = p.abs(drawSongHistory[0] - micMidi) > mistakeDelta ? 0 : p.map(p.abs(midi - micMidi), 0, mistakeDelta, 20, 0)
+			p.fill(0, 100, 100); //TODO: color
 			p.noStroke();
 
 			if (mic.getLevel() > micMin) { 
 				fullCounter += 1;
-				partCounter += p.map(p.abs(drawSongHistory[0] - micMidi), 0, 20, 0, 1);
+				partCounter += p.map(p.abs(drawSongHistory[p.width / 2] - micMidi), 0, 20, 0, 1);
 
 				p.textAlign(p.CENTER);
-				p.text(100 * partCounter / fullCounter, p.width / 4, p.height / 2);
+				// p.text(100 * partCounter / fullCounter, p.width / 4, p.height / 2);
 
 				var ey = p.map(micMidi, humanPitchMin, humanPitchMax, p.height, 0);
 				p.ellipse(p.width / 2, ey, 10);
@@ -137,30 +164,36 @@ function startSketch() {
 
 			// p.stroke(0);
 			// p.beginShape();
-			for (var i = 0; i < drawSongHistory.length - 3; i++) {
-			// replacing outliner with next modo input
-				if (drawSongHistory[i + 1] === -1) {
+			for (var i = 0; i < blockCount - 3; i++) {
+			// replacing outliner with next midi input
+				if (drawSongHistory[i + 1] === -1 && drawSongHistory[i + 2] !== -1) {
 					drawSongHistory[i + 1] = drawSongHistory[i + 2]; 
-				}
-			// TODO: drawing some shape 
+				}  
+
 				var y = p.map(drawSongHistory[i], humanPitchMin, humanPitchMax, p.height, 0);
-				var brightness = i > p.width / 2 ? 100 : 30
-				p.fill(0, 100, brightness);
-				p.ellipse(i + p.width / 2, y, 1);					
+				if (drawSongHistory[i] < 0) {
+					p.noFill();
+					p.noStroke();
+				}
+				else {
+					var code = colorCodes[drawSongHistory[i] % 12];
+					p.fill(code.color, code.white ? 70 : 100, code.white ? 100 : 70);
+				}
+				p.rect(i * blockWidth, y, blockWidth, blockHeight);					
 			}
 			// p.endShape();
 	
 			// get rid of first element
-			if (drawSongHistory.length === p.width / 2) {
+			if (drawSongHistory.length === blockCount) {
 					drawSongHistory.splice(0, 1);
 			}
 		}
-		
-		p.isNotOutlier = function(history, midi, delta) {
+
+		p.isNotOutlier = function(history, midi, recognitionDelta) {
 			// console.log(typeof history !== 'undefined');
 		
 			if ( typeof history != 'undefined' && history.length > 1 ) { 
-				return p.abs(history[history.length - 1] - midi) < delta; }
+				return p.abs(history[history.length - 1] - midi) < recognitionDelta; }
 			else {
 				return true;
 				} 
@@ -206,7 +239,7 @@ function startSketch() {
 		
 		
 			// Find the biggest value in a buffer, set that value to 1.0,
-			// and scale every other value by the same amount.
+			// and blockWidth every other value by the same amount.
 		p.normalize = function(buffer) {
 			var biggestVal = 0;
 			var nSamples = buffer.length;
