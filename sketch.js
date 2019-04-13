@@ -32,7 +32,7 @@ function startSketch() {
 		// prev-post - for syncing the song, full/part - for stats
 		var prevCounter, postCounter, fullCounter, partCounter;
 		var blockWidth, blockCount, blockHeight;
-		var uri = './lfv_string.mp3';
+		// var uri = './lfv_string.mp3';
 
 		p.preload = function() {
 			song = p.loadSound(uri); //database
@@ -41,8 +41,8 @@ function startSketch() {
 		
 		p.setup = function() {
 			// meh
-			p.createCanvas(p.windowWidth, p.windowHeight);
-			// p.createCanvas(width, height);
+			// p.createCanvas(p.windowWidth, p.windowHeight);
+			p.createCanvas(width, height);
 			p.noFill();
 			p.frameRate(60);
 			p.colorMode(p.HSB, 70, 100, 100);
