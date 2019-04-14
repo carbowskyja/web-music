@@ -9,8 +9,8 @@
           // document.addEventListener("load", () => {document.ReactNativeWebView.postMessage('hey');});
           var uri;
           document.addEventListener("message", function(event) {
-            [uri, height, width] = event.data.split(' ');
-            alert(height);
+            [uri, appHeight, appWidth] = event.data.split(' ');
+            alert(appHeight);
             startSketch();
           })
           // startSketch();

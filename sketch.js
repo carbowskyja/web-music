@@ -42,7 +42,7 @@ function startSketch() {
 		p.setup = function() {
 			// meh
 			// p.createCanvas(p.windowWidth, p.windowHeight);
-			p.createCanvas(width, height);
+			p.createCanvas(appWidth, appHeight);
 			p.noFill();
 			p.frameRate(60);
 			p.colorMode(p.HSB, 70, 100, 100);
