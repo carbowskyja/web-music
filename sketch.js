@@ -32,9 +32,9 @@ function startSketch() {
 		// prev-post - for syncing the song, full/part - for stats
 		var prevCounter, postCounter, fullCounter, partCounter;
 		var blockWidth, blockCount, blockHeight;
-		var appWidth = 1080;
-		var appHeight = 1920;
-		var uri = './sample.mp3';
+		// var appWidth = 1080;
+		// var appHeight = 1920;
+		// var uri = './sample.mp3';
 
 		p.preload = function() {
 			song = p.loadSound(uri); //database
