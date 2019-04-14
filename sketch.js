@@ -32,6 +32,8 @@ function startSketch() {
 		// prev-post - for syncing the song, full/part - for stats
 		var prevCounter, postCounter, fullCounter, partCounter;
 		var blockWidth, blockCount, blockHeight;
+		// var appWidth = 1080;
+		// var appHeight = 1920;
 		// var uri = './lfv_string.mp3';
 
 		p.preload = function() {
@@ -52,7 +54,7 @@ function startSketch() {
 			humanPitchMax = 84; // TODO: needs to be even less wide, about 3 octaves (excluding)
 			humanPitchMin = 36; 
 			mistakeDelta = 10;
-			blockWidth = 10; // TODO: find
+			blockWidth = 60; // TODO: find
 
 			blockHeight = p.map(humanPitchMax - 1, humanPitchMin, humanPitchMax, p.height, 0);
 			blockCount = p.floor(p.width / blockWidth);
