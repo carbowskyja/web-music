@@ -52,7 +52,7 @@ function startSketch() {
 			humanPitchMax = 84; // TODO: needs to be even less wide, about 3 octaves (excluding)
 			humanPitchMin = 36; 
 			mistakeDelta = 10;
-			blockWidth = 15; // TODO: find
+			blockWidth = 30; // TODO: find
 
 			blockHeight = p.map(humanPitchMax - 1, humanPitchMin, humanPitchMax, p.height, 0);
 			blockCount = p.floor(p.width / blockWidth);
