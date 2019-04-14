@@ -10,8 +10,6 @@
           var uri, appWidth, appHeight;
           document.addEventListener("message", function(event) {
             [uri, appHeight, appWidth] = event.data.split(' ');
-            alert(appHeight);
-            alert(appWidth);
             startSketch();
           })
           // startSketch();

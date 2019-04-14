@@ -32,9 +32,9 @@ function startSketch() {
 		// prev-post - for syncing the song, full/part - for stats
 		var prevCounter, postCounter, fullCounter, partCounter;
 		var blockWidth, blockCount, blockHeight;
-		// var appWidth = 1080;
-		// var appHeight = 1920;
-		// var uri = './sample.mp3';
+		var appWidth = 1080;
+		var appHeight = 1812;
+		var uri = './sample.mp3';
 
 		p.preload = function() {
 			song = p.loadSound(uri); //database
@@ -42,8 +42,6 @@ function startSketch() {
 		}
 		
 		p.setup = function() {
-			// meh
-			// p.createCanvas(p.windowWidth, p.windowHeight);
 			p.createCanvas(appWidth, appHeight);
 			p.noFill();
 			p.frameRate(60);
@@ -66,7 +64,10 @@ function startSketch() {
 
 			prevCounter = p.floor(blockCount / 2);
 			postCounter = p.floor(blockCount / 2);
-			console.log(prevCounter, postCounter);
+			alert('countdown: ' + prevCounter);
+			alert('block count: ' + blockCount);
+			alert('block width: ' + blockWidth);
+			alert('block height: ' + blockHeight);
 
 			fullCounter = 0;
 			partCounter = 0;
