@@ -10,6 +10,7 @@
           var uri;
           document.addEventListener("message", function(event) {
             [uri, height, width] = event.data.split(' ');
+            alert(height);
             startSketch();
           })
           // startSketch();
