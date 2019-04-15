@@ -52,9 +52,9 @@ function startSketch() {
 			humanPitchMax = 84; // TODO: needs to be even less wide, about 3 octaves (excluding)
 			humanPitchMin = 36; 
 			mistakeDelta = 10;
-			blockWidth = 30; // TODO: find
 
 			blockHeight = p.map(humanPitchMax - 1, humanPitchMin, humanPitchMax, p.height, 0);
+			blockWidth = blockHeight;
 			blockCount = p.floor(p.width / blockWidth);
 			// TODO: the height of rects should be estimated too!!!
 
@@ -64,10 +64,6 @@ function startSketch() {
 
 			prevCounter = p.floor(blockCount / 2);
 			postCounter = p.floor(blockCount / 2);
-			alert('countdown: ' + prevCounter);
-			alert('block count: ' + blockCount);
-			alert('block width: ' + blockWidth);
-			alert('block height: ' + blockHeight);
 
 			fullCounter = 0;
 			partCounter = 0;
@@ -115,8 +111,10 @@ function startSketch() {
 			p.noStroke();
 			for (var i = 0; i < 4; i++) {
 				for (var j = 0; j < 12; j++) {
-					p.fill(0, 0, colorCodes[j].white ? 100 : 0);
-					p.rect(p.width - blockWidth * 3, p.height - (i * 12 + j) * blockHeight, blockWidth * 3, blockHeight);
+					p.fill(50, 20, colorCodes[j].white ? 50 : 40);
+					p.rect(0, p.height - (i * 12 + j) * (blockHeight + 1), p.width, blockHeight);
+					// p.fill(0, 0, colorCodes[j].white ? 100 : 0);
+					// p.rect(p.width - blockWidth * 3, p.height - (i * 12 + j) * (blockHeight + 1), blockWidth * 3, blockHeight);
 				}
 			}
 
@@ -168,13 +166,14 @@ function startSketch() {
 
 			// p.stroke(0);
 			// p.beginShape();
-			for (var i = 0; i < blockCount - 3; i++) {
+			for (var i = 0; i < blockCount - 2; i++) {
 			// replacing outliner with next midi input
 				if (drawSongHistory[i + 1] === -1 && drawSongHistory[i + 2] !== -1) {
 					drawSongHistory[i + 1] = drawSongHistory[i + 2]; 
 				}  
 
-				var y = p.map(drawSongHistory[i], humanPitchMin, humanPitchMax, p.height, 0);
+				// var y = p.map(drawSongHistory[i], humanPitchMin, humanPitchMax, p.height, 0);
+				var y = p.height - (drawSongHistory[i] - humanPitchMin) * (blockHeight + 1)
 				if (drawSongHistory[i] < 0) {
 					p.noFill();
 					p.noStroke();
@@ -186,7 +185,16 @@ function startSketch() {
 				p.rect(i * blockWidth, y, blockWidth, blockHeight);					
 			}
 			// p.endShape();
+
+			for (var i = 0; i < 4; i++) {
+				for (var j = 0; j < 12; j++) {
+					p.fill(0, 0, colorCodes[j].white ? 100 : 0);
+					p.rect(p.width - blockWidth * 3, p.height - (i * 12 + j) * (blockHeight + 1), blockWidth * 3, blockHeight);
+				}
+			}
 	
+
+
 			// get rid of first element
 			if (drawSongHistory.length === blockCount) {
 					drawSongHistory.splice(0, 1);
