@@ -32,9 +32,9 @@ function startSketch() {
 		// prev-post - for syncing the song, full/part - for stats
 		var prevCounter, postCounter, fullCounter, partCounter;
 		var blockWidth, blockCount, blockHeight;
-		var appWidth = 1080;
-		var appHeight = 1812;
-		var uri = './sample.mp3';
+		// var appWidth = 1080;
+		// var appHeight = 1812;
+		// var uri = './sample.mp3';
 
 		p.preload = function() {
 			song = p.loadSound(uri); //database
@@ -140,25 +140,7 @@ function startSketch() {
 				drawSongHistory.push(-2);
 			}
 			
-			// frequency analysis of the mic
-			timeDomain = fftMic.waveform(1024, 'float32');
-			corrBuff = p.autoCorrelate(timeDomain);
-			micMidi = p.freqToMidi(p.findFrequency(corrBuff));
-		
-			// var c = p.abs(drawSongHistory[0] - micMidi) > mistakeDelta ? 0 : p.map(p.abs(midi - micMidi), 0, mistakeDelta, 20, 0)
-			p.fill(0, 100, 100); //TODO: color
-			p.noStroke();
-
-			if (mic.getLevel() > micMin) { 
-				fullCounter += 1;
-				partCounter += p.map(p.abs(drawSongHistory[p.width / 2] - micMidi), 0, 20, 0, 1);
-
-				p.textAlign(p.CENTER);
-				// p.text(100 * partCounter / fullCounter, p.width / 4, p.height / 2);
-
-				var ey = p.map(micMidi, humanPitchMin, humanPitchMax, p.height, 0);
-				p.ellipse(p.width / 2, ey, 10);
-			}
+			
 		/*     begin playing and recording only when in the middle
 				countdown? nope */
 			// TODO: dynamic height
@@ -180,20 +162,38 @@ function startSketch() {
 				}
 				else {
 					var code = colorCodes[drawSongHistory[i] % 12];
-					p.fill(code.color, code.white ? 70 : 100, code.white ? 100 : 70);
+					p.fill(code.color, code.white ? 100 : 80, 100);
 				}
 				p.rect(i * blockWidth, y, blockWidth, blockHeight);					
 			}
-			// p.endShape();
 
+			// the bright piano grid
 			for (var i = 0; i < 4; i++) {
 				for (var j = 0; j < 12; j++) {
 					p.fill(0, 0, colorCodes[j].white ? 100 : 0);
 					p.rect(p.width - blockWidth * 3, p.height - (i * 12 + j) * (blockHeight + 1), blockWidth * 3, blockHeight);
 				}
 			}
-	
+				
+			// frequency analysis of the mic
+			timeDomain = fftMic.waveform(1024, 'float32');
+			corrBuff = p.autoCorrelate(timeDomain);
+			micMidi = p.freqToMidi(p.findFrequency(corrBuff));
 
+			p.stroke(0);
+			if (mic.getLevel() > micMin && micMidi > 0) { 
+				var code = colorCodes[micMidi % 12];
+				p.fill(code.color, 100, 100); //TODO: color
+				fullCounter += 1;
+				partCounter += p.map(p.abs(drawSongHistory[p.width / 2] - micMidi), 0, 20, 0, 1);
+
+				p.textAlign(p.CENTER);
+				// p.text(100 * partCounter / fullCounter, p.width / 4, p.height / 2);
+
+				// var ey = p.map(micMidi, humanPitchMin, humanPitchMax, p.height, 0);
+				var ey = p.height - (micMidi - humanPitchMin) * (blockHeight + 1) + blockHeight / 2;
+				p.ellipse(p.width / 2, ey, blockHeight * 1.5);
+			}
 
 			// get rid of first element
 			if (drawSongHistory.length === blockCount) {
