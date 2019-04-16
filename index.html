@@ -5,18 +5,18 @@
       <script src="sketch.js"></script>
       <script>
           // window.Uri = 'https://firebasestorage.googleapis.com/v0/b/vocalistsbf.appspot.com/o/songs%2Fsample.mp3?alt=media&token=b626efc2-d80f-4e5e-94a8-8688776212bf';
-          // var uri; 
-          // var appWidth;
-          // var appHeight;
-          // document.addEventListener("message", function(event) {
-          //   [uri, appHeight, appWidth] = event.data.split(' ');
-          //   startSketch();
-          // })
-          var uri;
+          var uri; 
+          var appWidth;
+          var appHeight;
           document.addEventListener("message", function(event) {
-            uri = event.data.split(' ')[0];
+            [uri, appHeight, appWidth] = event.data.split(' ');
             startSketch();
           })
+          // var uri;
+          // document.addEventListener("message", function(event) {
+          //   uri = event.data.split(' ')[0];
+          //   startSketch();
+          // })
           // startSketch();
         </script>
   </head>
