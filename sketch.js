@@ -72,8 +72,7 @@ function startSketch() {
 			// to ease the analysis
 			songFilter = new p5.LowPass();
 			songFilter.disconnect();
-			// song.loop();  
-			//TODO: filter connection
+
 			song.disconnect();
 			song.connect(songFilter);
 		
