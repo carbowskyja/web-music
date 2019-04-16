@@ -206,7 +206,7 @@ function startSketch() {
 				var percent = p.round(100 * (partCounter / fullCounter));
 				p.text(percent + '%', p.width / 2, p.height / 2);
 				p.noLoop();
-				ReactNativeWebView.postMessage(percent.toString());
+				// ReactNativeWebView.postMessage(percent.toString());
 			}
 		}
 
