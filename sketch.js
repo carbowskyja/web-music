@@ -59,7 +59,6 @@ function startSketch() {
 			// TODO: the height of rects should be estimated too!!!
 
 			prevCounter = p.floor(blockCount / 2);
-			// postCounter = p.floor(blockCount / 2);
 			postCounter = blockCount;
 
 			for (var i = 0; i < blockCount - 1; i++){
@@ -195,19 +194,19 @@ function startSketch() {
 					drawSongHistory.splice(0, 1);
 			}
 
-			if (postCounter === -1) {
-				p.clear();
-				p.background(50, 20, 60);
-				p.fill(0, 0, 0);
-				p.textSize(100);
-				p.textStyle(p.BOLD);
-				p.textAlign(p.CENTER, p.CENTER);
+			// if (postCounter === -1) {
+			// 	p.clear();
+			// 	p.background(50, 20, 60);
+			// 	p.fill(0, 0, 0);
+			// 	p.textSize(100);
+			// 	p.textStyle(p.BOLD);
+			// 	p.textAlign(p.CENTER, p.CENTER);
 
-				var percent = p.round(100 * (partCounter / fullCounter));
-				p.text(percent + '%', p.width / 2, p.height / 2);
-				p.noLoop();
-				// ReactNativeWebView.postMessage(percent.toString());
-			}
+			// 	var percent = p.round(100 * (partCounter / fullCounter));
+			// 	p.text(percent + '%', p.width / 2, p.height / 2);
+			// 	p.noLoop();
+			// 	// ReactNativeWebView.postMessage(percent.toString());
+			// }
 		}
 
 		p.isNotOutlier = function(history, midi, recognitionDelta) {		
