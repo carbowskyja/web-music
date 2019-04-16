@@ -44,7 +44,7 @@ function startSketch() {
 		p.setup = function() {
 			p.createCanvas(appWidth, appHeight);
 			p.noFill();
-			p.frameRate(30);
+			p.frameRate(60);
 			p.colorMode(p.HSB, 70, 100, 100);
 			// magic numbers
 			recognitionDelta = 1; 
