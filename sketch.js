@@ -32,8 +32,8 @@ function startSketch() {
 		// prev-post - for syncing the song, full/part - for stats
 		var prevCounter, postCounter, fullCounter, partCounter;
 		var blockWidth, blockCount, blockHeight;
-		// var appWidth = 1080;
-		// var appHeight = 1812;
+		var appWidth = 1080;
+		var appHeight = 1812;
 		// var uri = './sample.mp3';
 
 		p.preload = function() {
@@ -194,19 +194,19 @@ function startSketch() {
 					drawSongHistory.splice(0, 1);
 			}
 
-			// if (postCounter === -1) {
-			// 	p.clear();
-			// 	p.background(50, 20, 60);
-			// 	p.fill(0, 0, 0);
-			// 	p.textSize(100);
-			// 	p.textStyle(p.BOLD);
-			// 	p.textAlign(p.CENTER, p.CENTER);
+			if (postCounter === -1) {
+				p.clear();
+				p.background(50, 20, 60);
+				p.fill(0, 0, 0);
+				p.textSize(100);
+				p.textStyle(p.BOLD);
+				p.textAlign(p.CENTER, p.CENTER);
 
-			// 	var percent = p.round(100 * (partCounter / fullCounter));
-			// 	p.text(percent + '%', p.width / 2, p.height / 2);
-			// 	p.noLoop();
-			// 	// ReactNativeWebView.postMessage(percent.toString());
-			// }
+				var percent = p.round(100 * (partCounter / fullCounter));
+				p.text(percent + '%', p.width / 2, p.height / 2);
+				p.noLoop();
+				ReactNativeWebView.postMessage(percent.toString());
+			}
 		}
 
 		p.isNotOutlier = function(history, midi, recognitionDelta) {		
