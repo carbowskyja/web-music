@@ -32,8 +32,8 @@ function startSketch() {
 		// prev-post - for syncing the song, full/part - for stats
 		var prevCounter, postCounter, fullCounter, partCounter;
 		var blockWidth, blockCount, blockHeight;
-		var appWidth = 1080;
-		var appHeight = 1812;
+		// var appWidth = 1080;
+		// var appHeight = 1812;
 		// var uri = './sample.mp3';
 
 		p.preload = function() {
@@ -203,7 +203,7 @@ function startSketch() {
 				p.textAlign(p.CENTER, p.CENTER);
 
 				var percent = p.round(100 * (partCounter / fullCounter));
-				p.text(percent + '%', p.width / 2, p.height / 2);
+				p.text('Keep up the good work!\nYour score: ' + percent + '%', p.width / 2, p.height / 2);
 				p.noLoop();
 				ReactNativeWebView.postMessage(percent.toString());
 			}
