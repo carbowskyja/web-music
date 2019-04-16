@@ -18,7 +18,7 @@ function startSketch() {
 		var song, audio;
 		var songHistory = [];
 		var drawSongHistory = [];
-		var fftSong, fftMic, myFilter, recognitionDelta, humanPitchMax, humanPitchMin, mistakeDelta;
+		var fftSong, fftMic, songFilter, recognitionDelta, humanPitchMax, humanPitchMin, mistakeDelta;
 		
 		// center clip nullifies samples below a clip amount
 		var doCenterClip = true;
@@ -32,8 +32,8 @@ function startSketch() {
 		// prev-post - for syncing the song, full/part - for stats
 		var prevCounter, postCounter, fullCounter, partCounter;
 		var blockWidth, blockCount, blockHeight;
-		// var appWidth = 1080;
-		// var appHeight = 1812;
+		var appWidth = 1080;
+		var appHeight = 1812;
 		// var uri = './sample.mp3';
 
 		p.preload = function() {
@@ -44,7 +44,7 @@ function startSketch() {
 		p.setup = function() {
 			p.createCanvas(appWidth, appHeight);
 			p.noFill();
-			p.frameRate(60);
+			p.frameRate(30);
 			p.colorMode(p.HSB, 70, 100, 100);
 			// magic numbers
 			recognitionDelta = 1; 
@@ -58,12 +58,13 @@ function startSketch() {
 			blockCount = p.floor(p.width / blockWidth);
 			// TODO: the height of rects should be estimated too!!!
 
+			prevCounter = p.floor(blockCount / 2);
+			// postCounter = p.floor(blockCount / 2);
+			postCounter = blockCount;
+
 			for (var i = 0; i < blockCount - 1; i++){
 				drawSongHistory.push(-2);
 			}
-
-			prevCounter = p.floor(blockCount / 2);
-			postCounter = p.floor(blockCount / 2);
 
 			fullCounter = 0;
 			partCounter = 0;
@@ -80,18 +81,20 @@ function startSketch() {
 			fftSong.setInput(songFilter);
 		
 			mic = new p5.AudioIn();
-			// mic.connect(myFilter);
-		
+
 			fftMic = new p5.FFT();
 			fftMic.setInput(mic);
-		
-			// mic.disconnect();
+
 			song.play();
 		}
 		
 		p.draw = function() {
+			if (postCounter === 0) {
+				p.noLoop();
+				postCounter -= 1;
+			}
+
 			if (postCounter > 0 && !song.isPlaying()) {
-				drawSongHistory.push(-2);
 				postCounter -= 1;
 			}
 
@@ -109,17 +112,17 @@ function startSketch() {
 
 			// piano grid
 			p.noStroke();
-			for (var i = 0; i < 4; i++) {
+			for (var i = 3; i < 7; i++) {
 				for (var j = 0; j < 12; j++) {
 					p.fill(50, 20, colorCodes[j].white ? 50 : 40);
-					p.rect(0, p.height - (i * 12 + j) * (blockHeight + 1), p.width, blockHeight);
-					// p.fill(0, 0, colorCodes[j].white ? 100 : 0);
-					// p.rect(p.width - blockWidth * 3, p.height - (i * 12 + j) * (blockHeight + 1), blockWidth * 3, blockHeight);
+
+					var y = p.map(i * 12 + j, humanPitchMin, humanPitchMax, p.height, 0);
+					p.rect(0, y, p.width, blockHeight);
 				}
 			}
-
 			p.fill(50, 20, 40);
 			p.rect(p.width / 2, 0, 3, p.height);
+
 			// frequency analysis of the song
 			var timeDomain = fftSong.waveform(1024, 'float32');
 			var corrBuff = p.autoCorrelate(timeDomain);
@@ -141,21 +144,15 @@ function startSketch() {
 			}
 			
 			
-		/*     begin playing and recording only when in the middle
-				countdown? nope */
-			// TODO: dynamic height
-			// shapes?
-
-			// p.stroke(0);
-			// p.beginShape();
+		/*     begin playing and recording only when in the middle */
 			for (var i = 0; i < blockCount - 2; i++) {
 			// replacing outliner with next midi input
 				if (drawSongHistory[i + 1] === -1 && drawSongHistory[i + 2] !== -1) {
 					drawSongHistory[i + 1] = drawSongHistory[i + 2]; 
 				}  
 
-				// var y = p.map(drawSongHistory[i], humanPitchMin, humanPitchMax, p.height, 0);
-				var y = p.height - (drawSongHistory[i] - humanPitchMin) * (blockHeight + 1)
+				var y = p.map(drawSongHistory[i], humanPitchMin, humanPitchMax, p.height, 0);
+				// var y = p.height - (drawSongHistory[i] - humanPitchMin) * (blockHeight + 1)
 				if (drawSongHistory[i] < 0) {
 					p.noFill();
 					p.noStroke();
@@ -168,10 +165,12 @@ function startSketch() {
 			}
 
 			// the bright piano grid
-			for (var i = 0; i < 4; i++) {
+			for (var i = 3; i < 7; i++) {
 				for (var j = 0; j < 12; j++) {
 					p.fill(0, 0, colorCodes[j].white ? 100 : 0);
-					p.rect(p.width - blockWidth * 3, p.height - (i * 12 + j) * (blockHeight + 1), blockWidth * 3, blockHeight);
+
+					var y = p.map(i * 12 + j, humanPitchMin, humanPitchMax, p.height, 0);
+					p.rect(p.width - blockWidth * 3, y, blockWidth * 3, blockHeight);
 				}
 			}
 				
@@ -188,32 +187,29 @@ function startSketch() {
 				partCounter += p.map(p.abs(drawSongHistory[p.width / 2] - micMidi), 0, 20, 0, 1);
 
 				p.textAlign(p.CENTER);
-				// p.text(100 * partCounter / fullCounter, p.width / 4, p.height / 2);
+				// p.text(p.round(100 * partCounter / fullCounter), p.width / 4, p.height / 2);
 
-				// var ey = p.map(micMidi, humanPitchMin, humanPitchMax, p.height, 0);
-				var ey = p.height - (micMidi - humanPitchMin) * (blockHeight + 1) + blockHeight / 2;
-				p.ellipse(p.width / 2, ey, blockHeight * 1.5);
+				var ey = p.map(micMidi, humanPitchMin, humanPitchMax, p.height, 0);
+				p.ellipse(p.width / 2, ey + blockHeight / 2, blockHeight * 1.5);
 			}
 
 			// get rid of first element
-			if (drawSongHistory.length === blockCount) {
+			if (drawSongHistory.length >= blockCount) {
 					drawSongHistory.splice(0, 1);
 			}
 		}
 
-		p.isNotOutlier = function(history, midi, recognitionDelta) {
-			// console.log(typeof history !== 'undefined');
-		
+		p.isNotOutlier = function(history, midi, recognitionDelta) {		
 			if ( typeof history != 'undefined' && history.length > 1 ) { 
-				return p.abs(history[history.length - 1] - midi) < recognitionDelta; }
+				return p.abs(history[history.length - 1] - midi) < recognitionDelta; 
+			}
 			else {
 				return true;
-				} 
+			} 
 		} 
 		
 		// accepts a timeDomainBuffer and multiplies every value
 		p.autoCorrelate = function(timeDomainBuffer) {
-			
 			var nSamples = timeDomainBuffer.length;
 		
 			// pre-normalize the input buffer
