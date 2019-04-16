@@ -32,8 +32,8 @@ function startSketch() {
 		// prev-post - for syncing the song, full/part - for stats
 		var prevCounter, postCounter, fullCounter, partCounter;
 		var blockWidth, blockCount, blockHeight;
-		var appWidth = 1080;
-		var appHeight = 1812;
+		// var appWidth = 1080;
+		// var appHeight = 1812;
 		// var uri = './sample.mp3';
 
 		p.preload = function() {
@@ -89,7 +89,6 @@ function startSketch() {
 		
 		p.draw = function() {
 			if (postCounter === 0) {
-				p.noLoop();
 				postCounter -= 1;
 			}
 
@@ -108,8 +107,7 @@ function startSketch() {
 			}
 
 			p.background(50, 20, 60);
-
-			// piano grid
+			// low sat piano grid
 			p.noStroke();
 			for (var i = 3; i < 7; i++) {
 				for (var j = 0; j < 12; j++) {
@@ -178,15 +176,15 @@ function startSketch() {
 			corrBuff = p.autoCorrelate(timeDomain);
 			micMidi = p.freqToMidi(p.findFrequency(corrBuff));
 
+			// mic drawing
 			p.stroke(0);
+			fullCounter += 1;
 			if (mic.getLevel() > micMin && micMidi > 0) { 
 				var code = colorCodes[micMidi % 12];
 				p.fill(code.color, 100, 100); //TODO: color
-				fullCounter += 1;
-				partCounter += p.map(p.abs(drawSongHistory[p.width / 2] - micMidi), 0, 20, 0, 1);
 
-				p.textAlign(p.CENTER);
-				// p.text(p.round(100 * partCounter / fullCounter), p.width / 4, p.height / 2);
+				var mistake = p.abs(drawSongHistory[blockCount / 2] - micMidi);
+				partCounter += (mistake <= mistakeDelta ? p.map(mistake, 0, mistakeDelta, 1, 0) : 0.5);
 
 				var ey = p.map(micMidi, humanPitchMin, humanPitchMax, p.height, 0);
 				p.ellipse(p.width / 2, ey + blockHeight / 2, blockHeight * 1.5);
@@ -195,6 +193,19 @@ function startSketch() {
 			// get rid of first element
 			if (drawSongHistory.length >= blockCount) {
 					drawSongHistory.splice(0, 1);
+			}
+
+			if (postCounter === -1) {
+				p.clear();
+				p.fill(0, 0, 0);
+				p.textSize(100);
+				p.textStyle(p.BOLD);
+				p.textAlign(p.CENTER, p.CENTER);
+
+				var percent = p.round(100 * (partCounter / fullCounter));
+				ReactNativeWebView.postMessage(percent.toString());
+				p.text(percent + '%', p.width / 2, p.height / 2);
+				p.noLoop();
 			}
 		}
 
