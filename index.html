@@ -5,12 +5,12 @@
       <script src="sketch.js"></script>
       <script>
           // window.Uri = 'https://firebasestorage.googleapis.com/v0/b/vocalistsbf.appspot.com/o/songs%2Fsample.mp3?alt=media&token=b626efc2-d80f-4e5e-94a8-8688776212bf';
-          var info;
-          document.addEventListener("message", function(event) {
-            info = event.data;
-            startSketch();
-          })
-        </script>
+        var info;
+        document.addEventListener("message", function(event) {
+          info = JSON.parse(event.data);
+          startSketch();
+        })
+      </script>
   </head>
   <body></body>
 </html>
