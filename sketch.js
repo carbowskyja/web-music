@@ -185,7 +185,13 @@ function startSketch() {
 			fullCounter += 1;
 			if (mic.getLevel() > micMin && micMidi > 0) { 
 				var code = colorCodes[micMidi % 12];
-				p.fill(code.color, 100, 100); //TODO: color
+				if (info.colorScheme === 'RGB') {
+					p.fill(code.color, 100, 100);
+				}
+				else {
+					p.fill(0, 0, 50);
+				}
+
 
 				var mistake = p.abs(drawSongHistory[blockCount / 2] - micMidi);
 				partCounter += (mistake <= mistakeDelta ? p.map(mistake, 0, mistakeDelta, 1, 0) : 0.5);
