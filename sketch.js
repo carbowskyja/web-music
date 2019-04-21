@@ -34,12 +34,12 @@ function startSketch() {
 		var blockWidth, blockCount, blockHeight;
 
 		p.preload = function() {
-			song = p.loadSound(uri); //database
-			audio = p.loadSound(uri);
+			song = p.loadSound(info.uri); //database
+			audio = p.loadSound(info.uri);
 		}
 		
 		p.setup = function() {
-			p.createCanvas(parseInt(appWidth), parseInt(appHeight));
+			p.createCanvas(parseInt(info.appWidth), parseInt(info.appHeight));
 			p.noFill();
 			p.frameRate(60);
 			p.colorMode(p.HSB, 70, 100, 100);
@@ -93,7 +93,9 @@ function startSketch() {
 			}
 
 			if (prevCounter === 0) {
-				audio.play();
+				if (!info.muted) {
+					audio.play();
+				}
 				mic.start();
 				prevCounter -= 1;
 			}
@@ -152,7 +154,13 @@ function startSketch() {
 				}
 				else {
 					var code = colorCodes[drawSongHistory[i] % 12];
-					p.fill(code.color, code.white ? 100 : 80, 100);
+					if (info.colorScheme === 'RGB') {
+						p.fill(code.color, code.white ? 100 : 80, 100);
+					}
+					else {
+						p.fill(0, 0, code.white ? 100 : 0);
+					}
+					
 				}
 				p.rect(i * blockWidth, y, blockWidth, blockHeight);					
 			}
